@@ -1,6 +1,11 @@
 import { API_BASE_URL } from '@/config/index'
 import { toast } from '@/hooks/use-toast'
-import type { AfterResponseHook, BeforeErrorHook, BeforeRequestHook, Hooks } from 'ky'
+import type {
+  AfterResponseHook,
+  BeforeErrorHook,
+  BeforeRequestHook,
+  Hooks,
+} from 'ky'
 import ky from 'ky'
 import type { IOtherOptions } from './base'
 
@@ -19,7 +24,11 @@ export type FetchOptionType = Omit<RequestInit, 'body'> & {
   body?: BodyInit | Record<string, any> | null
 }
 
-const afterResponse204: AfterResponseHook = async (_request, _options, response) => {
+const afterResponse204: AfterResponseHook = async (
+  _request,
+  _options,
+  response
+) => {
   if (response.status === 204) return Response.json({ result: 'success' })
 }
 
@@ -29,7 +38,9 @@ export type ResponseError = {
   status: number
 }
 
-const afterResponseErrorCode = (otherOptions: IOtherOptions): AfterResponseHook => {
+const afterResponseErrorCode = (
+  otherOptions: IOtherOptions
+): AfterResponseHook => {
   return async (_request, _options, response) => {
     const clonedResponse = response.clone()
     if (!/^([23])\d{2}$/.test(String(clonedResponse.status))) {
@@ -73,9 +84,7 @@ const beforeRequestAuthorization: BeforeRequestHook = async (request) => {
 }
 
 const baseHooks: Hooks = {
-  afterResponse: [
-    afterResponse204,
-  ],
+  afterResponse: [afterResponse204],
 }
 
 const baseClient = ky.create({
@@ -91,8 +100,16 @@ export const baseOptions: RequestInit = {
   redirect: 'follow',
 }
 
-async function base<T>(url: string, options: FetchOptionType = {}, otherOptions: IOtherOptions = {}): Promise<T> {
-  const { params, body, headers, ...init } = Object.assign({}, baseOptions, options)
+async function base<T>(
+  url: string,
+  options: FetchOptionType = {},
+  otherOptions: IOtherOptions = {}
+): Promise<T> {
+  const { params, body, headers, ...init } = Object.assign(
+    {},
+    baseOptions,
+    options
+  )
   const {
     bodyStringify = true,
     needAllResponseContent,
@@ -110,22 +127,21 @@ async function base<T>(url: string, options: FetchOptionType = {}, otherOptions:
 
   const fetchPathname = `${base}${url.startsWith('/') ? url : `/${url}`}`
 
-  if (deleteContentType)
-    (headers as any).delete('Content-Type')
+  if (deleteContentType) (headers as any).delete('Content-Type')
 
   const client = baseClient.extend({
     hooks: {
       ...baseHooks,
       beforeError: [
-        ...baseHooks.beforeError || [],
+        ...(baseHooks.beforeError || []),
         beforeErrorToast(otherOptions),
       ],
       beforeRequest: [
-        ...baseHooks.beforeRequest || [],
+        ...(baseHooks.beforeRequest || []),
         beforeRequestAuthorization,
       ].filter(Boolean),
       afterResponse: [
-        ...baseHooks.afterResponse || [],
+        ...(baseHooks.afterResponse || []),
         afterResponseErrorCode(otherOptions),
       ],
     },
@@ -141,16 +157,15 @@ async function base<T>(url: string, options: FetchOptionType = {}, otherOptions:
     searchParams: params,
   })
 
-  if (needAllResponseContent)
-    return res as T
+  if (needAllResponseContent) return res as T
   const contentType = res.headers.get('content-type')
   if (
-    contentType
-    && [ContentType.download, ContentType.downloadZip].includes(contentType)
+    contentType &&
+    [ContentType.download, ContentType.downloadZip].includes(contentType)
   )
-    return await res.blob() as T
+    return (await res.blob()) as T
 
-  return await res.json() as T
+  return (await res.json()) as T
 }
 
 export { base }
