@@ -6,6 +6,12 @@ import type {
   BeforeRequestHook,
   Hooks,
 } from 'ky'
+import type {
+  AfterResponseHook,
+  BeforeErrorHook,
+  BeforeRequestHook,
+  Hooks,
+} from 'ky'
 import ky from 'ky'
 import type { IOtherOptions } from './base'
 
@@ -92,6 +98,7 @@ const beforeRequestAuthorization: BeforeRequestHook = async (request) => {
 
 const baseHooks: Hooks = {
   afterResponse: [afterResponse204],
+  afterResponse: [afterResponse204],
 }
 
 const baseClient = ky.create({
@@ -135,19 +142,23 @@ async function base<T>(
   const fetchPathname = `${base}${url.startsWith('/') ? url : `/${url}`}`
 
   if (deleteContentType) (headers as any).delete('Content-Type')
+  if (deleteContentType) (headers as any).delete('Content-Type')
 
   const client = baseClient.extend({
     hooks: {
       ...baseHooks,
       beforeError: [
         ...(baseHooks.beforeError || []),
+        ...(baseHooks.beforeError || []),
         beforeErrorToast(otherOptions),
       ],
       beforeRequest: [
         ...(baseHooks.beforeRequest || []),
+        ...(baseHooks.beforeRequest || []),
         beforeRequestAuthorization,
       ].filter(Boolean),
       afterResponse: [
+        ...(baseHooks.afterResponse || []),
         ...(baseHooks.afterResponse || []),
         afterResponseErrorCode(otherOptions),
       ],
@@ -165,13 +176,18 @@ async function base<T>(
   })
 
   if (needAllResponseContent) return res as T
+  if (needAllResponseContent) return res as T
   const contentType = res.headers.get('content-type')
   if (
     contentType &&
     [ContentType.download, ContentType.downloadZip].includes(contentType)
+    contentType &&
+    [ContentType.download, ContentType.downloadZip].includes(contentType)
   )
     return (await res.blob()) as T
+    return (await res.blob()) as T
 
+  return (await res.json()) as T
   return (await res.json()) as T
 }
 
