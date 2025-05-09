@@ -11,7 +11,7 @@
                 "run",
                 "dev"
             ],
-            "runtimeExecutable": "pnpm",
+            "runtimeExecutable": "npm",
             "skipFiles": [
                 "<node_internals>/**"
             ],

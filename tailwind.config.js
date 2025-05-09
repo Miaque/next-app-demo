@@ -1,10 +1,14 @@
+const {heroui} = require("@heroui/theme");
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
     darkMode: ["class"],
     content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./components/**/*.{js,ts,jsx,tsx,mdx}"
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
+    // single component styles
+    "./node_modules/@heroui/theme/dist/components/toast.js",
   ],
   theme: {
   	extend: {
@@ -89,6 +93,6 @@ module.exports = {
   		}
   	}
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [require("tailwindcss-animate"), heroui()],
 }
 
