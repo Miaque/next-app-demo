@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { useEffect, useRef } from 'react'
 
 const FormSchema: ZodType<FormData> = z
   .object({
@@ -36,6 +37,8 @@ const FormSchema: ZodType<FormData> = z
   })
 
 export default function Page() {
+  const formRef = useRef<HTMLDivElement>(null)
+
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -50,8 +53,26 @@ export default function Page() {
     console.log(values)
   }
 
+  function handlePaste(e: ClipboardEvent) {
+    e.preventDefault()
+
+    navigator.clipboard
+      .readText()
+      .then((text) => {
+        console.log('全局捕获的粘贴文本：', JSON.parse(text))
+      })
+      .catch((err) => {
+        console.error('读取剪贴板失败：', err)
+      })
+  }
+
+  useEffect(() => {
+    formRef.current?.addEventListener('paste', handlePaste)
+    return () => formRef.current?.removeEventListener('paste', handlePaste)
+  }, [])
+
   return (
-    <>
+    <div ref={formRef}>
       <ul>表单</ul>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className={'space-y-8'}>
@@ -114,6 +135,6 @@ export default function Page() {
           <Button type="submit"> Submit</Button>
         </form>
       </Form>
-    </>
+    </div>
   )
 }
