@@ -10,3 +10,7 @@ export type FormData = {
   password: string
   confirmPassword: string
 }
+
+export interface BlogRef {
+  validate: () => Promise<{ valid: boolean; values: any }>
+}

@@ -1,8 +1,4 @@
-import { z, ZodType } from 'zod'
-import { FormData } from '@/types/demo'
-import { useEffect, useRef } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { Button } from '@/components/ui/button'
 import {
   Form,
   FormControl,
@@ -13,7 +9,11 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
+import { BlogRef, FormData } from '@/types/demo'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { ForwardedRef, useEffect, useImperativeHandle, useRef } from 'react'
+import { useForm } from 'react-hook-form'
+import { z, ZodType } from 'zod'
 
 const FormSchema: ZodType<FormData> = z
   .object({
@@ -33,7 +33,7 @@ const FormSchema: ZodType<FormData> = z
     path: ['confirmPassword'],
   })
 
-export function BlogForm() {
+export function BlogForm({ ref }: { ref: ForwardedRef<BlogRef> }) {
   const formRef = useRef<HTMLDivElement>(null)
 
   const form = useForm<z.infer<typeof FormSchema>>({
@@ -68,8 +68,19 @@ export function BlogForm() {
     return () => formRef.current?.removeEventListener('paste', handlePaste)
   }, [])
 
+  useImperativeHandle(
+    ref,
+    () => ({
+      validate: async () => {
+        const valid = await form.trigger()
+        return { valid, values: form.getValues() }
+      },
+    }),
+    [],
+  )
+
   return (
-    <div ref={formRef} className='w-96 m-6'>
+    <div ref={formRef} className="m-6 w-96">
       <ul>表单</ul>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className={'space-y-8'}>
